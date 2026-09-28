@@ -1,0 +1,27 @@
+.auth-wrap {
+  display: flex;
+  justify-content: center;
+  padding-top: 30px;
+}
+
+.auth-card {
+  width: 380px;
+}
+
+h1 {
+  font-size: 21px;
+  margin: 0 0 18px;
+}
+
+.switch-line {
+  margin: 16px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.switch-line a {
+  color: var(--brand);
+  font-weight: 600;
+  text-decoration: none;
+}

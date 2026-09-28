@@ -1,0 +1,52 @@
+<h1 class="page-title">My Bookings</h1>
+
+@if (loading) {
+  <p class="muted">Loading…</p>
+}
+
+@if (errorMessage) {
+  <div class="banner-error">{{ errorMessage }}</div>
+}
+
+@if (!loading && bookings.length === 0 && !errorMessage) {
+  <p class="muted">You haven't booked any trips yet.</p>
+}
+
+@if (bookings.length) {
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>PNR</th>
+          <th>Train</th>
+          <th>Route</th>
+          <th>Date</th>
+          <th>Class</th>
+          <th>Fare</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of bookings; track b.bookingId) {
+          <tr>
+            <td>{{ b.pnr }}</td>
+            <td>{{ b.trainNumber }} - {{ b.trainName }}</td>
+            <td>{{ b.fromCode }} → {{ b.toCode }}</td>
+            <td>{{ b.journeyDate }}</td>
+            <td>{{ b.classCode }}</td>
+            <td>₹{{ b.totalFare }}</td>
+            <td>
+              <span [class.status-avl]="b.status === 'CONFIRMED'" [class.status-wl]="b.status !== 'CONFIRMED'">
+                {{ b.status }}@if (b.waitlistNumber) { (WL {{ b.waitlistNumber }}) }
+              </span>
+            </td>
+            <td>
+              <a [routerLink]="['/my-booking', b.pnr]" class="btn btn-outline">View</a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

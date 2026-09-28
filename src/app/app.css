@@ -1,0 +1,10 @@
+.page {
+  padding: 28px 20px 60px;
+  min-height: calc(100vh - 58px);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 20px 14px 48px;
+  }
+}

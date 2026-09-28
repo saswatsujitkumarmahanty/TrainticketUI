@@ -1,0 +1,13 @@
+.table-wrap {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.table-wrap .data-table {
+  min-width: 720px;
+}
+
+.table-wrap .data-table th,
+.table-wrap .data-table td {
+  padding: 14px 16px;
+}

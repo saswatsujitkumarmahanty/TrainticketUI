@@ -1,0 +1,52 @@
+<div class="auth-wrap">
+  <form class="card auth-card" [formGroup]="form" (ngSubmit)="submit()">
+    <h1>Create account</h1>
+ 
+    @if (errorMessage) {
+      <div class="banner-error">{{ errorMessage }}</div>
+    }
+    @if (successMessage) {
+      <div class="banner-success">{{ successMessage }}</div>
+    }
+ 
+    <div class="field">
+      <label>Full name</label>
+      <input type="text" formControlName="fullName" autocomplete="name" />
+      @if (form.controls.fullName.invalid && form.controls.fullName.touched) {
+        <span class="error-text">Enter your full name (2-100 characters).</span>
+      }
+    </div>
+ 
+    <div class="field">
+      <label>Email</label>
+      <input type="email" formControlName="email" autocomplete="email" />
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <span class="error-text">Enter a valid email address.</span>
+      }
+    </div>
+ 
+    <div class="field">
+      <label>Mobile number</label>
+      <input type="tel" formControlName="phone" autocomplete="tel" maxlength="10" />
+      @if (form.controls.phone.invalid && form.controls.phone.touched) {
+        <span class="error-text">Enter a valid 10-digit mobile number (starts with 6-9).</span>
+      }
+    </div>
+ 
+    <div class="field">
+      <label>Password</label>
+      <input type="password" formControlName="password" autocomplete="new-password" />
+      @if (form.controls.password.invalid && form.controls.password.touched) {
+        <span class="error-text">Password must be at least 8 characters.</span>
+      }
+    </div>
+ 
+    <button class="btn btn-primary btn-block" type="submit" [disabled]="loading">
+      {{ loading ? 'Creating account…' : 'Register' }}
+    </button>
+ 
+    <p class="switch-line">
+      Already have an account? <a routerLink="/login">Login</a>
+    </p>
+  </form>
+</div>

@@ -1,1 +1,282 @@
 /* You can add global styles to this file, and also import other style files */
+
+:root {
+  --brand: #0a5cb8;
+  --brand-dark: #084a94;
+  --accent: #ff9f1c;
+  --success: #1e9e5a;
+  --danger: #d64545;
+  --warning: #c98a12;
+  --text: #1a2430;
+  --muted: #6b7785;
+  --border: #dce3ea;
+  --bg: #f4f7fa;
+  --surface: #ffffff;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, system-ui;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  color: var(--text);
+  font-weight: 700;
+}
+
+a {
+  color: var(--brand);
+}
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.page-title {
+  font-size: 22px;
+  margin: 0 0 18px;
+}
+
+/* Card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+    transform 0.05s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.btn-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--brand-dark);
+  border-color: var(--brand-dark);
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--brand);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: rgba(10, 92, 184, 0.08);
+  border-color: var(--brand);
+}
+
+.btn-danger {
+  background: #fff;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-block {
+  display: flex;
+  width: 100%;
+}
+
+/* Forms */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.field label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: #b9c4cf;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(10, 92, 184, 0.15);
+}
+
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched {
+  border-color: var(--danger);
+}
+
+.error-text {
+  color: var(--danger);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* Banners */
+.banner-error,
+.banner-success {
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.banner-error {
+  background: #fdecec;
+  color: #a52424;
+  border: 1px solid #f3c6c6;
+}
+
+.banner-success {
+  background: #e9f9ef;
+  color: #157a42;
+  border: 1px solid #bfe9cf;
+}
+
+/* Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+}
+
+.data-table th {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
+
+.data-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(10, 92, 184, 0.04);
+}
+
+/* Status pills */
+.status-avl {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.status-wl {
+  color: var(--warning);
+  font-weight: 700;
+}
+
+.status-pill {
+  display: inline-block;
+}
+
+.status-pill.status-avl {
+  background: #e9f9ef;
+  border-color: #bfe9cf;
+}
+
+.status-pill.status-wl {
+  background: #fdf3e3;
+  border-color: #f0dba8;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c7d0d9;
+  border-radius: 8px;
+}

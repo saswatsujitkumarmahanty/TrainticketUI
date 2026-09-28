@@ -1,0 +1,102 @@
+@if (trip && !result) {
+  <div class="card trip-summary">
+    <div>
+      <span class="train-number">{{ trip.trainNumber }}</span>
+      <span class="train-name">{{ trip.trainName }}</span>
+    </div>
+    <div class="muted route-line">
+      {{ trip.fromName }} ({{ trip.fromCode }}) → {{ trip.toName }} ({{ trip.toCode }})
+      &nbsp;|&nbsp; {{ trip.journeyDate }}
+      &nbsp;|&nbsp; {{ trip.className }} ({{ trip.classCode }})
+      &nbsp;|&nbsp; ₹{{ trip.fare }} / passenger
+    </div>
+  </div>
+
+  <form class="card passenger-card" [formGroup]="form" (ngSubmit)="confirmBooking()">
+    <div class="section-head">
+      <h2>Passenger details</h2>
+      <span class="muted">Up to {{ maxPassengers }} passengers per booking</span>
+    </div>
+
+    @if (errorMessage) {
+      <div class="banner-error">{{ errorMessage }}</div>
+    }
+
+    <div formArrayName="passengers">
+      @for (p of passengers.controls; track p; let i = $index) {
+        <div class="passenger-row" [formGroupName]="i">
+          <span class="row-index">{{ i + 1 }}</span>
+
+          <div class="field name-field">
+            <label>Name</label>
+            <input type="text" formControlName="name" />
+          </div>
+
+          <div class="field age-field">
+            <label>Age</label>
+            <input type="number" formControlName="age" min="1" max="120" />
+          </div>
+
+          <div class="field gender-field">
+            <label>Gender</label>
+            <select formControlName="gender">
+              <option value="" disabled>Select</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+              <option value="T">Other</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            class="remove-btn"
+            title="Remove passenger"
+            [disabled]="passengers.length === 1"
+            (click)="removePassenger(i)"
+          >
+            ✕
+          </button>
+        </div>
+      }
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-outline add-btn"
+      (click)="addPassenger()"
+      [disabled]="passengers.length >= maxPassengers"
+    >
+      + Add passenger
+    </button>
+
+    <div class="fare-line">
+      <span>Total fare</span>
+      <strong>₹{{ totalFare }}</strong>
+    </div>
+
+    <!-- No payment step: confirming here creates the booking directly. -->
+    <button class="btn btn-primary btn-block" type="submit" [disabled]="loading">
+      {{ loading ? 'Confirming…' : 'Confirm Booking' }}
+    </button>
+  </form>
+}
+
+@if (result) {
+  <div class="card result-card">
+    <h2>Booking confirmed</h2>
+    <p class="pnr">PNR: <strong>{{ result.pnr }}</strong></p>
+    <p>
+      Status:
+      <strong [class.status-avl]="result.status === 'CONFIRMED'" [class.status-wl]="result.status !== 'CONFIRMED'">
+        {{ result.status }}
+        @if (result.waitlistNumber) { (WL {{ result.waitlistNumber }}) }
+      </strong>
+    </p>
+    <p>Total fare paid: <strong>₹{{ result.totalFare }}</strong></p>
+
+    <div class="result-actions">
+      <a routerLink="/my-bookings" class="btn btn-primary">View My Bookings</a>
+      <a routerLink="/search" class="btn btn-outline">Book Another Trip</a>
+    </div>
+  </div>
+}

@@ -1,0 +1,75 @@
+<a routerLink="/my-bookings" class="back-link">← Back to My Bookings</a>
+
+@if (loading) {
+  <p class="muted">Loading…</p>
+}
+
+@if (errorMessage) {
+  <div class="banner-error">{{ errorMessage }}</div>
+}
+
+@if (booking) {
+  <div class="card detail-card">
+    <div class="detail-head">
+      <div>
+        <h1>PNR {{ booking.pnr }}</h1>
+        <div class="muted">
+          {{ booking.trainNumber }} - {{ booking.trainName }} &nbsp;|&nbsp;
+          {{ booking.fromName }} ({{ booking.fromCode }}) → {{ booking.toName }} ({{ booking.toCode }})
+        </div>
+      </div>
+      <span
+        class="status-pill"
+        [class.status-avl]="booking.status === 'CONFIRMED'"
+        [class.status-wl]="booking.status !== 'CONFIRMED'"
+      >
+        {{ booking.status }}@if (booking.waitlistNumber) { (WL {{ booking.waitlistNumber }}) }
+      </span>
+    </div>
+
+    <dl class="detail-grid">
+      <dt>Journey date</dt><dd>{{ booking.journeyDate }}</dd>
+      <dt>Class</dt><dd>{{ booking.className }} ({{ booking.classCode }})</dd>
+      <dt>Total fare</dt><dd>₹{{ booking.totalFare }}</dd>
+      <dt>Booked at</dt><dd>{{ booking.bookedAt }}</dd>
+    </dl>
+
+    <h2 class="section-title">Passengers</h2>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Coach</th>
+          <th>Seat</th>
+          <th>Berth</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of booking.passengers; track $index) {
+          <tr>
+            <td>{{ $index + 1 }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.age }}</td>
+            <td>{{ p.gender }}</td>
+            <td>{{ p.coachCode || '-' }}</td>
+            <td>{{ p.seatNumber ?? '-' }}</td>
+            <td>{{ p.berthType || '-' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    @if (cancelMessage) {
+      <div class="banner-success" style="margin-top:16px;">{{ cancelMessage }}</div>
+    }
+
+    @if (booking.status === 'CONFIRMED' || booking.status === 'WAITLISTED') {
+      <button class="btn btn-danger" style="margin-top:16px;" (click)="cancel()" [disabled]="cancelling">
+        {{ cancelling ? 'Cancelling…' : 'Cancel Booking' }}
+      </button>
+    }
+  </div>
+}

@@ -1,0 +1,61 @@
+.back-link {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--brand);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.detail-card {
+  max-width: 800px;
+}
+
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.detail-head h1 {
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.status-pill {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 16px;
+  row-gap: 6px;
+  margin: 0 0 22px;
+  font-size: 14px;
+}
+
+.detail-grid dt {
+  color: var(--muted);
+  font-size: 12.5px;
+  text-transform: uppercase;
+  padding-top: 2px;
+}
+
+.detail-grid dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.section-title {
+  font-size: 15px;
+  margin: 0 0 10px;
+}
