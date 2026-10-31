@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,10 +19,22 @@ export class TrainSearch {
   private stationService = inject(StationService);
   private trainService = inject(TrainService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   fromTerm = '';
   toTerm = '';
   journeyDate = this.today();
+  classFilter = '';
+  minDate = this.today();
+  activeTab: 'book' | 'pnr' = 'book';
+  pnr = '';
+  readonly classOptions = [
+  { code: '', label: 'All Classes' },
+  { code: 'FC', label: 'First Class (FC)' },
+  { code: 'SC', label: 'Second Class (SC)' },
+  { code: 'DV', label: 'Divyang (DV)' },
+  { code: 'LG', label: 'Luggage (LG)' }
+  ];
 
   fromStation: Station | null = null;
   toStation: Station | null = null;
@@ -48,8 +60,14 @@ export class TrainSearch {
         switchMap((term) => this.stationService.search(term))
       )
       .subscribe({
-        next: (stations) => (this.fromResults = stations),
-        error: () => (this.fromResults = []),
+        next: (stations) => {
+          this.fromResults = stations;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.fromResults = [];
+          this.cdr.markForCheck();
+        },
       });
 
     this.toSearch$
@@ -59,9 +77,31 @@ export class TrainSearch {
         switchMap((term) => this.stationService.search(term))
       )
       .subscribe({
-        next: (stations) => (this.toResults = stations),
-        error: () => (this.toResults = []),
+        next: (stations) => {
+          this.toResults = stations;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.toResults = [];
+          this.cdr.markForCheck();
+        },
       });
+  }
+
+  get visibleResults(): TrainSearchResult[] {
+    if (!this.classFilter) return this.searchResults;
+    return this.searchResults
+      .map((t) => ({ ...t, classes: t.classes.filter((c) => c.classCode === this.classFilter) }))
+      .filter((t) => t.classes.length > 0);
+  }
+
+  goVacancy(): void {
+    this.router.navigate(['/vacancy']);
+  }
+
+  goPnr(): void {
+    const v = this.pnr.trim();
+    if (v) this.router.navigate(['/my-bookings', v]);
   }
 
   private today(): string {
@@ -103,11 +143,17 @@ export class TrainSearch {
   }
 
   closeFrom(): void {
-    setTimeout(() => (this.fromOpen = false), 150);
+    setTimeout(() => {
+      this.fromOpen = false;
+      this.cdr.markForCheck();
+    }, 150);
   }
 
   closeTo(): void {
-    setTimeout(() => (this.toOpen = false), 150);
+    setTimeout(() => {
+      this.toOpen = false;
+      this.cdr.markForCheck();
+    }, 150);
   }
 
   swapStations(): void {
@@ -141,12 +187,14 @@ export class TrainSearch {
         this.searching = false;
         this.searched = true;
         this.searchResults = results;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.searching = false;
         this.searched = true;
         this.searchResults = [];
         this.errorMessage = err?.error?.error || 'Could not search trains. Please try again.';
+        this.cdr.markForCheck();
       },
     });
   }

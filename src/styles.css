@@ -23,10 +23,12 @@
 
 html,
 body {
+  overflow-x: hidden;
   height: 100%;
 }
 
 body {
+  overflow-x: hidden;
   margin: 0;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, system-ui;
   background: var(--bg);

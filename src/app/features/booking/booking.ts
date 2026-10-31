@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -45,7 +45,8 @@ export class Booking implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder,
-    private bookings: BookingService
+    private bookings: BookingService,
+    private cdr: ChangeDetectorRef
   ) 
   {
     this.form = this.fb.group({
@@ -132,10 +133,12 @@ export class Booking implements OnInit {
         next: (res) => {
           this.loading = false;
           this.result = res;
+          this.cdr.markForCheck();
         },
         error: (err) => {
           this.loading = false;
           this.errorMessage = err?.error?.error || 'Could not complete the booking. Please try again.';
+          this.cdr.markForCheck();
         }
       });
   }

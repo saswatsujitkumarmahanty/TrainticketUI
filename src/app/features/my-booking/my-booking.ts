@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BookingService } from '../../core/services/booking.service';
@@ -16,17 +16,19 @@ export class MyBooking implements OnInit {
   loading = true;
   errorMessage = '';
 
-  constructor(private bookingService: BookingService) {}
+  constructor(private bookingService: BookingService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.bookingService.getMine().subscribe({
       next: (res) => {
         this.bookings = res;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.errorMessage = 'Could not load your bookings.';
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }

@@ -1,88 +1,110 @@
-<h1 class="page-title">Search Trains</h1>
+<section class="hero">
+  <div class="sheet">
+    @if (activeTab === 'pnr') {
+      <form class="pnr-form" (ngSubmit)="goPnr()">
+        <div class="ir-input">
+          <span class="ico">#</span>
+          <input type="text" placeholder="Enter PNR" [(ngModel)]="pnr" name="pnr" autocomplete="off" />
+        </div>
+        <button class="search-btn" type="submit" [disabled]="!pnr.trim()">Check PNR Status</button>
+      </form>
+    } @else {
+      <form (ngSubmit)="onSearch()">
+        <div class="stations">
+          <div class="ir-input station">
+            <span class="ico">➤</span>
+            <input type="text" placeholder="From" autocomplete="off" [(ngModel)]="fromTerm" name="from"
+              (input)="onFromInput()" (focus)="fromOpen = true" (blur)="closeFrom()" />
+            @if (fromOpen && fromResults.length) {
+              <ul class="suggest-list">
+                @for (s of fromResults; track s.stationId) {
+                  <li (mousedown)="pickFrom(s)">
+                    <span class="s-main">{{ s.name | uppercase }} - {{ s.code }}</span>
+                    <span class="s-city">{{ s.city | uppercase }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
 
-<form class="card search-card" (ngSubmit)="onSearch()">
-  <div class="search-row">
-    <div class="field station-field">
-      <label>From</label>
-      <input
-        type="text"
-        placeholder="City or station"
-        autocomplete="off"
-        [(ngModel)]="fromTerm"
-        name="from"
-        (input)="onFromInput()"
-        (focus)="fromOpen = true"
-        (blur)="closeFrom()"
-        required
-      />
-      @if (fromOpen && fromResults.length) {
-        <ul class="suggest-list">
-          @for (s of fromResults; track s.stationId) {
-            <li (mousedown)="pickFrom(s)">
-              <span class="s-code">{{ s.code }}</span>
-              <span class="s-name">{{ s.name }}</span>
-              <span class="s-city">{{ s.city }}</span>
-            </li>
-          }
-        </ul>
+          <button type="button" class="swap-btn" title="Swap stations" (click)="swapStations()">⇄</button>
+
+          <div class="ir-input station">
+            <span class="ico">📍</span>
+            <input type="text" placeholder="To" autocomplete="off" [(ngModel)]="toTerm" name="to"
+              (input)="onToInput()" (focus)="toOpen = true" (blur)="closeTo()" />
+            @if (toOpen && toResults.length) {
+              <ul class="suggest-list">
+                @for (s of toResults; track s.stationId) {
+                  <li (mousedown)="pickTo(s)">
+                    <span class="s-main">{{ s.name | uppercase }} - {{ s.code }}</span>
+                    <span class="s-city">{{ s.city | uppercase }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+
+        <div class="date-wrap">
+          <label class="float-label">DD/MM/YYYY *</label>
+          <div class="ir-input date">
+            <span class="ico">📅</span>
+            <input type="date" [(ngModel)]="journeyDate" name="date" [min]="minDate" />
+          </div>
+        </div>
+
+        <div class="ir-input class-wrap">
+          <span class="ico">💼</span>
+          <select [(ngModel)]="classFilter" name="cls">
+            @for (o of classOptions; track o.code) {
+              <option [value]="o.code">{{ o.label }}</option>
+            }
+          </select>
+        </div>
+
+        @if (errorMessage) {
+          <div class="banner-error">{{ errorMessage }}</div>
+        }
+
+        <button class="search-btn" type="submit" [disabled]="!canSearch || searching">
+          {{ searching ? 'Searching…' : 'Search Trains' }}
+        </button>
+      </form>
+    }
+
+    <div class="quick-row">
+      @if (activeTab === 'pnr') {
+        <button type="button" class="quick-btn" (click)="activeTab = 'book'">
+          <span class="q-ico">🎫</span>BOOK TICKET
+        </button>
+      } @else {
+        <button type="button" class="quick-btn" (click)="activeTab = 'pnr'">
+          <span class="q-ico">✔</span>PNR STATUS
+        </button>
       }
+      <button type="button" class="quick-btn" (click)="goVacancy()">
+        <span class="q-ico">📋</span>CHARTS / VACANCY
+      </button>
     </div>
-
-    <button type="button" class="swap-btn" title="Swap stations" (click)="swapStations()">⇄</button>
-
-    <div class="field station-field">
-      <label>To</label>
-      <input
-        type="text"
-        placeholder="City or station"
-        autocomplete="off"
-        [(ngModel)]="toTerm"
-        name="to"
-        (input)="onToInput()"
-        (focus)="toOpen = true"
-        (blur)="closeTo()"
-        required
-      />
-      @if (toOpen && toResults.length) {
-        <ul class="suggest-list">
-          @for (s of toResults; track s.stationId) {
-            <li (mousedown)="pickTo(s)">
-              <span class="s-code">{{ s.code }}</span>
-              <span class="s-name">{{ s.name }}</span>
-              <span class="s-city">{{ s.city }}</span>
-            </li>
-          }
-        </ul>
-      }
-    </div>
-
-    <div class="field date-field">
-      <label>Journey date</label>
-      <input type="date" [(ngModel)]="journeyDate" name="date" required />
-    </div>
-
-    <button class="btn btn-primary search-btn" type="submit" [disabled]="!canSearch || searching">
-      {{ searching ? 'Searching…' : 'Search' }}
-    </button>
   </div>
+</section>
 
-  @if (errorMessage) {
-    <div class="banner-error search-error">{{ errorMessage }}</div>
+<div class="results-area">
+  @if (searching) {
+    <p class="muted note">Looking for trains…</p>
   }
-</form>
 
-@if (searching) {
-  <p class="muted loading-line">Looking for trains…</p>
-}
+  @if (searched && !searching && visibleResults.length === 0 && !errorMessage) {
+    <p class="muted note">No trains found for this route, date and class.</p>
+  }
 
-@if (searched && !searching && searchResults.length === 0 && !errorMessage) {
-  <p class="muted loading-line">No trains found for this route and date.</p>
-}
-
-@if (searchResults.length) {
-  <div class="results">
-    <h2 class="results-title">Available trains</h2>
-    @for (train of searchResults; track train.trainId) {
+  @if (visibleResults.length) {
+    <h2 class="results-title">
+      {{ fromStation?.name }} → {{ toStation?.name }}
+      <span class="muted">· {{ visibleResults.length }} train(s)</span>
+    </h2>
+    @for (train of visibleResults; track train.trainId) {
       <div class="card train-card">
         <div class="train-head">
           <div>
@@ -97,19 +119,15 @@
             @if (train.daysTaken > 0) {
               <span class="day-badge">+{{ train.daysTaken }}d</span>
             }
-            <span class="muted distance">· {{ train.distanceKm }} km</span>
+            @if (train.distanceKm > 0) {
+  <span class="muted distance">· {{ train.distanceKm }} km</span>
+}
           </div>
         </div>
-
         <div class="class-options">
           @for (cls of train.classes; track cls.classId) {
-            <button
-              type="button"
-              class="class-chip"
-              [class.wl]="cls.status !== 'AVL' && !(cls.availableSeats > 0)"
-              [disabled]="cls.availableSeats <= 0 && cls.status !== 'WL'"
-              (click)="selectClass(train, cls)"
-            >
+            <button type="button" class="class-chip" [class.wl]="cls.availableSeats <= 0"
+              (click)="selectClass(train, cls)">
               <span class="cls-code">{{ cls.classCode }}</span>
               <span class="cls-fare">₹{{ cls.fare }}</span>
               <span class="cls-status">{{ cls.status }}</span>
@@ -118,5 +136,5 @@
         </div>
       </div>
     }
-  </div>
-}
+  }
+</div>

@@ -1,0 +1,129 @@
+<div class="vac-page">
+  <div class="vac-panel">
+    <h1 class="vac-title">SEAT AVAILABILITY</h1>
+
+    <form (ngSubmit)="onCheck()">
+      <div class="row">
+        <div class="ir-input">
+          <span class="ico">#</span>
+          <input type="text" placeholder="Train number (e.g. 12951)" [(ngModel)]="trainNumber" name="trainNumber"
+            autocomplete="off" />
+        </div>
+        <div class="ir-input">
+          <span class="ico">💼</span>
+          <select [(ngModel)]="classFilter" name="cls">
+            @for (o of classOptions; track o.code) {
+              <option [value]="o.code">{{ o.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="ir-input station">
+          <span class="ico">➤</span>
+          <input type="text" placeholder="From" autocomplete="off" [(ngModel)]="fromTerm" name="from"
+            (input)="onFromInput()" (focus)="fromOpen = true" (blur)="closeFrom()" />
+          @if (fromOpen && fromResults.length) {
+            <ul class="suggest-list">
+              @for (s of fromResults; track s.stationId) {
+                <li (mousedown)="pickFrom(s)">
+                  <span class="s-main">{{ s.name | uppercase }} - {{ s.code }}</span>
+                  <span class="s-city">{{ s.city | uppercase }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+        <div class="ir-input station">
+          <span class="ico">📍</span>
+          <input type="text" placeholder="To" autocomplete="off" [(ngModel)]="toTerm" name="to"
+            (input)="onToInput()" (focus)="toOpen = true" (blur)="closeTo()" />
+          @if (toOpen && toResults.length) {
+            <ul class="suggest-list">
+              @for (s of toResults; track s.stationId) {
+                <li (mousedown)="pickTo(s)">
+                  <span class="s-main">{{ s.name | uppercase }} - {{ s.code }}</span>
+                  <span class="s-city">{{ s.city | uppercase }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="ir-input">
+          <span class="ico">📅</span>
+          <input type="date" [(ngModel)]="journeyDate" name="date" [min]="minDate" />
+        </div>
+        <button class="check-btn" type="submit" [disabled]="!canCheck || loading">
+          {{ loading ? 'Checking…' : 'Get Availability' }}
+        </button>
+      </div>
+
+      @if (errorMessage) {
+        <div class="banner-error">{{ errorMessage }}</div>
+      }
+    </form>
+  </div>
+
+  @if (checked && trainInfo) {
+    <div class="vac-result">
+      <div class="train-head">
+        <div>
+          <span class="train-number">{{ trainInfo.trainNumber }}</span>
+          <span class="train-name">{{ trainInfo.trainName }}</span>
+          <span class="train-type">{{ trainInfo.trainType }}</span>
+        </div>
+        <div class="train-timing">
+          {{ fromStation?.name }} {{ trainInfo.departureTime }} → {{ toStation?.name }} {{ trainInfo.arrivalTime }}
+          @if (trainInfo.daysTaken > 0) {
+            <span class="day-badge">+{{ trainInfo.daysTaken }}d</span>
+          }
+          @if (trainInfo.distanceKm > 0) {
+  <span class="muted">· {{ trainInfo.distanceKm }} km</span>
+}
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="vac-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              @for (code of visibleCodes; track code) {
+                <th>{{ code }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows; track row.date) {
+              <tr>
+                <td class="date-cell">{{ row.date | date: 'EEE, dd MMM yyyy' }}</td>
+                @if (!row.train) {
+                  <td class="not-running" [attr.colspan]="visibleCodes.length || 1">Train not running</td>
+                } @else {
+                  @for (code of visibleCodes; track code) {
+                    <td>
+                      @if (row.classes[code]; as cls) {
+                        <button type="button" class="cell" [class.avl]="cls.availableSeats > 0"
+                          [class.wl]="cls.availableSeats <= 0" (click)="book(row, cls)">
+                          <span class="status">{{ label(cls) }}</span>
+                          <span class="fare">₹{{ cls.fare }}</span>
+                        </button>
+                      } @else {
+                        <span class="muted">—</span>
+                      }
+                    </td>
+                  }
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">Click any cell to book that class on that date.</p>
+    </div>
+  }
+</div>

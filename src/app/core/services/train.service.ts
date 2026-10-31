@@ -15,4 +15,13 @@ export class TrainService {
       .set('date', journeyDate); 
     return this.http.get<TrainSearchResult[]>(`${environment.apiUrl}/trains/search`, { params });
   }
+
+  getVacancy(trainNumber: string, fromStationId: number, toStationId: number, journeyDate: string): Observable<TrainSearchResult> {
+    const params = new HttpParams()
+      .set('trainNumber', trainNumber)
+      .set('from', fromStationId)
+      .set('to', toStationId)
+      .set('date', journeyDate);
+    return this.http.get<TrainSearchResult>(`${environment.apiUrl}/trains/vacancy`, { params });
+  }
 }

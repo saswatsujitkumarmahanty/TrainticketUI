@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BookingService } from '../../../core/services/booking.service';
@@ -20,7 +20,8 @@ export class BookingDetail implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private bookingService: BookingService
+    private bookingService: BookingService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -34,10 +35,12 @@ export class BookingDetail implements OnInit {
       next: (res) => {
         this.booking = res;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.errorMessage = 'Booking not found.';
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -50,11 +53,13 @@ export class BookingDetail implements OnInit {
       next: () => {
         this.cancelling = false;
         this.cancelMessage = 'Booking cancelled successfully.';
+        this.cdr.markForCheck();
         this.load(this.booking!.pnr);
       },
       error: (err) => {
         this.cancelling = false;
         this.cancelMessage = err?.error?.error || 'Could not cancel this booking.';
+        this.cdr.markForCheck();
       }
     });
   }
