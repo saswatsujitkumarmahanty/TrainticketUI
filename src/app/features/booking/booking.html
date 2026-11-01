@@ -1,4 +1,4 @@
-@if (trip && !result) {
+@if (trip && !results.length) {
   <div class="card trip-summary">
     <div>
       <span class="train-number">{{ trip.trainNumber }}</span>
@@ -10,6 +10,14 @@
       &nbsp;|&nbsp; {{ trip.className }} ({{ trip.classCode }})
       &nbsp;|&nbsp; ₹{{ trip.fare }} / passenger
     </div>
+    @if (withReturn && selectedReturn) {
+      <div class="muted route-line">
+        Return: {{ selectedReturn.trainNumber }} {{ selectedReturn.trainName }}
+        &nbsp;|&nbsp; {{ trip.toName }} ({{ trip.toCode }}) → {{ trip.fromName }} ({{ trip.fromCode }})
+        &nbsp;|&nbsp; {{ selectedReturn.departureTime.slice(0, 5) }} → {{ selectedReturn.arrivalTime.slice(0, 5) }}
+        &nbsp;|&nbsp; ₹{{ selectedReturn.fare }} / passenger
+      </div>
+    }
   </div>
 
   <form class="card passenger-card" [formGroup]="form" (ngSubmit)="confirmBooking()">
@@ -69,30 +77,70 @@
       + Add passenger
     </button>
 
+    <div class="return-box">
+      <label class="return-toggle">
+        <input type="checkbox" [checked]="withReturn" (change)="toggleReturn($any($event.target).checked)" />
+        Add a return journey (same day, same class, same passengers)
+      </label>
+
+      @if (withReturn) {
+        @if (returnLoading) {
+          <p class="muted">Finding return trains…</p>
+        }
+        @if (returnMessage) {
+          <p class="muted">{{ returnMessage }}</p>
+        }
+        @if (returnOptions.length) {
+          <div class="field">
+            <label>Return train ({{ trip.toName }} → {{ trip.fromName }})</label>
+            <select (change)="selectReturn($any($event.target).value)">
+              <option value="" [selected]="selectedReturnId === null">Choose a return train</option>
+              @for (o of returnOptions; track o.trainId) {
+                <option [value]="o.trainId" [selected]="o.trainId === selectedReturnId">
+                  {{ o.trainNumber }} · {{ o.departureTime.slice(0, 5) }} → {{ o.arrivalTime.slice(0, 5) }} · ₹{{ o.fare }} · {{ o.status }}
+                </option>
+              }
+            </select>
+          </div>
+        }
+      }
+    </div>
+
     <div class="fare-line">
-      <span>Total fare</span>
+      <span>Total fare{{ withReturn && selectedReturn ? ' (both journeys)' : '' }}</span>
       <strong>₹{{ totalFare }}</strong>
     </div>
 
     <!-- No payment step: confirming here creates the booking directly. -->
     <button class="btn btn-primary btn-block" type="submit" [disabled]="loading">
-      {{ loading ? 'Confirming…' : 'Confirm Booking' }}
+      {{ loading ? 'Confirming…' : (withReturn ? 'Confirm Round Trip' : 'Confirm Booking') }}
     </button>
   </form>
 }
 
-@if (result) {
+@if (results.length) {
   <div class="card result-card">
-    <h2>Booking confirmed</h2>
-    <p class="pnr">PNR: <strong>{{ result.pnr }}</strong></p>
-    <p>
-      Status:
-      <strong [class.status-avl]="result.status === 'CONFIRMED'" [class.status-wl]="result.status !== 'CONFIRMED'">
-        {{ result.status }}
-        @if (result.waitlistNumber) { (WL {{ result.waitlistNumber }}) }
-      </strong>
-    </p>
-    <p>Total fare paid: <strong>₹{{ result.totalFare }}</strong></p>
+    <h2>{{ results.length > 1 ? 'Round trip confirmed' : 'Booking confirmed' }}</h2>
+
+    @for (r of results; track r.bookingId; let i = $index) {
+      <div class="leg">
+        @if (results.length > 1) {
+          <p><strong>{{ i === 0 ? 'Outbound journey' : 'Return journey' }}</strong></p>
+        }
+        @if (isLocal) {
+          <p class="pnr">Ticket No.: <strong>#{{ r.bookingId }}</strong></p>
+        } @else {
+          <p class="pnr">PNR: <strong>{{ r.pnr }}</strong></p>
+        }
+        <p>
+          Status:
+          <strong [class.status-avl]="r.status === 'CONFIRMED'" [class.status-wl]="r.status !== 'CONFIRMED'">
+            {{ r.status }}
+          </strong>
+        </p>
+        <p>Fare paid: <strong>₹{{ r.totalFare }}</strong></p>
+      </div>
+    }
 
     <div class="result-actions">
       <a routerLink="/my-bookings" class="btn btn-primary">View My Bookings</a>

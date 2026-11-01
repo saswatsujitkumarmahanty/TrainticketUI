@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
-import { BookingCreatedResult, BookingDetails, BookingSummary, CreateBookingRequest } from '../models/booking.model';
+import { BookingCreatedResult, BookingDetails, BookingSummary, CreateBookingRequest, RoundTripRequest, RoundTripResult } from '../models/booking.model';
 
 @Injectable({ providedIn: 'root' })
 export class BookingService {
@@ -10,6 +10,10 @@ export class BookingService {
 
   create(request: CreateBookingRequest): Observable<BookingCreatedResult> {
     return this.http.post<BookingCreatedResult>(`${environment.apiUrl}/bookings`, request);
+  }
+
+  createRoundTrip(request: RoundTripRequest): Observable<RoundTripResult> {
+    return this.http.post<RoundTripResult>(`${environment.apiUrl}/bookings/roundtrip`, request);
   }
 
   getMine(): Observable<BookingSummary[]> {

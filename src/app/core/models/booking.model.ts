@@ -15,6 +15,16 @@ export interface CreateBookingRequest {
   journeyDate: string; 
   passengers: PassengerDto[];
 }
+
+export interface RoundTripRequest {
+  classId: number;
+  outboundTrainId: number;
+  returnTrainId: number;
+  fromStationId: number;
+  toStationId: number;
+  journeyDate: string;
+  passengers: PassengerDto[];
+}
  
 export interface BookingCreatedResult {
   bookingId: number;
@@ -22,6 +32,11 @@ export interface BookingCreatedResult {
   totalFare: number;
   status: string;
   waitlistNumber?: number | null;
+}
+
+export interface RoundTripResult {
+  bookings: BookingCreatedResult[]; // [0] outbound, [1] return
+  totalFare: number;
 }
  
 export interface BookingSummary {
