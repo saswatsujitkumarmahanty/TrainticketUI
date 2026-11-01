@@ -1,16 +1,16 @@
 @if (trip && !results.length) {
   <div class="card trip-summary">
     <div>
-      <span class="train-number">{{ trip.trainNumber }}</span>
+      <span class="train-number">{{ trip.trainNumber }}</span>&nbsp;
       <span class="train-name">{{ trip.trainName }}</span>
     </div>
     <div class="muted route-line">
       {{ trip.fromName }} ({{ trip.fromCode }}) → {{ trip.toName }} ({{ trip.toCode }})
       &nbsp;|&nbsp; {{ trip.journeyDate }}
       &nbsp;|&nbsp; {{ trip.className }} ({{ trip.classCode }})
-      &nbsp;|&nbsp; ₹{{ trip.fare }} / passenger
+      &nbsp;|&nbsp; ₹{{ trip.fare * (isLocal && withReturn ? 2 : 1) }} / passenger{{ isLocal && withReturn ? ' (return)' : '' }}
     </div>
-    @if (withReturn && selectedReturn) {
+    @if (!isLocal && withReturn && selectedReturn) {
       <div class="muted route-line">
         Return: {{ selectedReturn.trainNumber }} {{ selectedReturn.trainName }}
         &nbsp;|&nbsp; {{ trip.toName }} ({{ trip.toCode }}) → {{ trip.fromName }} ({{ trip.fromCode }})
@@ -20,6 +20,52 @@
     }
   </div>
 
+  @if (isLocal) {
+    <div class="card ticket-card">
+      <h3 class="ticket-label">Ticket Type</h3>
+      <div class="pill-row">
+        <button type="button" class="pill" [class.active]="!withReturn" (click)="setTicketType(false)">JOURNEY</button>
+        <button type="button" class="pill" [class.active]="withReturn" (click)="setTicketType(true)">RETURN</button>
+      </div>
+
+      @if (errorMessage) {
+        <div class="banner-error">{{ errorMessage }}</div>
+      }
+
+      <div class="counter-box">
+        <span class="counter-name">Adult</span>
+        <div class="stepper">
+          <button type="button" class="step-btn" (click)="changeAdults(-1)" [disabled]="adults <= 1">−</button>
+          <span class="count">{{ adults }}</span>
+          <button type="button" class="step-btn" (click)="changeAdults(1)" [disabled]="totalPassengers >= maxPassengers">+</button>
+        </div>
+      </div>
+
+      <div class="counter-box">
+        <span class="counter-name">Child</span>
+        <div class="stepper">
+          <button type="button" class="step-btn" (click)="changeChildren(-1)" [disabled]="children <= 0">−</button>
+          <span class="count">{{ children }}</span>
+          <button type="button" class="step-btn" (click)="changeChildren(1)" [disabled]="totalPassengers >= maxPassengers">+</button>
+        </div>
+      </div>
+      <p class="muted hint">Aged between 5 and 12 years on the day of travel</p>
+
+      <h3 class="ticket-label">Class</h3>
+      <div class="pill-row">
+        <span class="pill active">{{ trip.className.replace(' Class', '').toUpperCase() }}</span>
+      </div>
+
+      <div class="fare-bar">
+        <span class="fare-title">🎫 Fare</span>
+        <strong class="fare-amount">₹ {{ totalFare }}</strong>
+      </div>
+
+      <button class="btn btn-primary btn-block book-now" type="button" [disabled]="loading" (click)="confirmBooking()">
+        {{ loading ? 'Booking…' : 'Book Now' }}
+      </button>
+    </div>
+  } @else {
   <form class="card passenger-card" [formGroup]="form" (ngSubmit)="confirmBooking()">
     <div class="section-head">
       <h2>Passenger details</h2>
@@ -116,11 +162,12 @@
       {{ loading ? 'Confirming…' : (withReturn ? 'Confirm Round Trip' : 'Confirm Booking') }}
     </button>
   </form>
+  }
 }
 
 @if (results.length) {
   <div class="card result-card">
-    <h2>{{ results.length > 1 ? 'Round trip confirmed' : 'Booking confirmed' }}</h2>
+    <h2>{{ results.length > 1 ? 'Round trip confirmed' : (bookedAsReturn ? 'Return ticket confirmed' : 'Booking confirmed') }}</h2>
 
     @for (r of results; track r.bookingId; let i = $index) {
       <div class="leg">

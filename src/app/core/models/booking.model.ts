@@ -13,6 +13,7 @@ export interface CreateBookingRequest {
   fromStationId: number;
   toStationId: number;
   journeyDate: string; 
+  isReturn?: boolean;
   passengers: PassengerDto[];
 }
 

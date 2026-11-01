@@ -50,6 +50,7 @@ export class Booking implements OnInit {
   loading = false;
   errorMessage = '';
   results: BookingCreatedResult[] = [];
+  bookedAsReturn = false;
 
   // return journey (same day, same class, same passengers)
   withReturn = false;
@@ -59,6 +60,10 @@ export class Booking implements OnInit {
   selectedReturnId: number | null = null;
 
   form!: ReturnType<FormBuilder['group']>;
+
+  // unreserved (local train) ticket: just counts, no passenger names
+  adults = 1;
+  children = 0;
 
   readonly maxPassengers = MAX_PASSENGERS;
 
@@ -116,6 +121,37 @@ export class Booking implements OnInit {
     return this.trip?.trainType === 'Local';
   }
 
+  get totalPassengers(): number {
+    return this.isLocal ? this.adults + this.children : this.passengers.length;
+  }
+
+  changeAdults(delta: number): void {
+    const next = this.adults + delta;
+    if (next < 1 || next + this.children > this.maxPassengers) return;
+    this.adults = next;
+  }
+
+  changeChildren(delta: number): void {
+    const next = this.children + delta;
+    if (next < 0 || this.adults + next > this.maxPassengers) return;
+    this.children = next;
+  }
+
+  // Local trains: RETURN is a single ticket (2x fare, valid same day on the opposite route),
+  // so there is no return train to pick.
+  setTicketType(isReturn: boolean): void {
+    this.withReturn = isReturn;
+    this.errorMessage = '';
+  }
+
+  // The API still expects a passenger list, so build one from the counts.
+  private localPassengers() {
+    const list: { name: string; age: number; gender: 'T' }[] = [];
+    for (let i = 1; i <= this.adults; i++) list.push({ name: `Adult ${i}`, age: 30, gender: 'T' });
+    for (let i = 1; i <= this.children; i++) list.push({ name: `Child ${i}`, age: 8, gender: 'T' });
+    return list;
+  }
+
   private buildPassenger() {
     return this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(100)]],
@@ -141,8 +177,11 @@ export class Booking implements OnInit {
   }
 
   get totalFare(): number {
+    if (this.isLocal) {
+      return (this.trip?.fare ?? 0) * (this.withReturn ? 2 : 1) * this.totalPassengers;
+    }
     const perPassenger = (this.trip?.fare ?? 0) + (this.withReturn ? (this.selectedReturn?.fare ?? 0) : 0);
-    return perPassenger * this.passengers.length;
+    return perPassenger * this.totalPassengers;
   }
 
   toggleReturn(checked: boolean): void {
@@ -202,18 +241,20 @@ export class Booking implements OnInit {
   }
 
   confirmBooking(): void {
-    if (!this.trip || this.form.invalid) {
+    if (!this.trip) return;
+    if (!this.isLocal && this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
-    if (this.withReturn && !this.selectedReturnId) {
+    const passengers = this.isLocal ? this.localPassengers() : this.passengers.value;
+    if (!this.isLocal && this.withReturn && !this.selectedReturnId) {
       this.errorMessage = 'Choose a return train, or untick the return journey.';
       return;
     }
     this.loading = true;
     this.errorMessage = '';
 
-    if (this.withReturn && this.selectedReturnId) {
+    if (!this.isLocal && this.withReturn && this.selectedReturnId) {
       this.bookings
         .createRoundTrip({
           classId: this.trip.classId,
@@ -222,7 +263,7 @@ export class Booking implements OnInit {
           fromStationId: this.trip.fromStationId,
           toStationId: this.trip.toStationId,
           journeyDate: this.trip.journeyDate,
-          passengers: this.passengers.value
+          passengers: passengers as any
         })
         .subscribe({
           next: (res) => {
@@ -246,11 +287,13 @@ export class Booking implements OnInit {
         fromStationId: this.trip.fromStationId,
         toStationId: this.trip.toStationId,
         journeyDate: this.trip.journeyDate,
-        passengers: this.passengers.value
+        isReturn: this.isLocal && this.withReturn,
+        passengers: passengers as any
       })
       .subscribe({
         next: (res) => {
           this.loading = false;
+          this.bookedAsReturn = this.isLocal && this.withReturn;
           this.results = [res];
           this.cdr.markForCheck();
         },
